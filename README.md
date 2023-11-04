@@ -1,4 +1,4 @@
-# Masks (with holes) exporter to COCO JSON annotation format
+# :arrows_counterclockwise: Masks (with holes) exporter to COCO JSON annotation format
 
 *NOTE*: The exporter currently works only from masks to COCO. Other base formats will be supported in the future.
 

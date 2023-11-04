@@ -83,7 +83,7 @@ if __name__ == "__main__":
     # Parse CLI arguments
     args = parse_args()
 
-    # NOTE: You should generate your palette here if mask_channel is -1
+    # NOTE: You should generate your palette here if mask_channel is -1 List[Tuple[int, int, int]]
     color_palette = None
 
     # Instantiate your exporter

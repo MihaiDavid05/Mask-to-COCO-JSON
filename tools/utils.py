@@ -37,19 +37,26 @@ def create_annotation_infos(
         image_id,
         category_info,
         binary_mask,
+        img_filename,
         filter_area=4
 ):
     annotation_infos = []
-
+    as_polygon = True
     # Pad mask to close contours of shapes which start and end at an edge
     padded_binary_mask = (
             np.pad(binary_mask, pad_width=1, mode="constant", constant_values=0) * 255
     ).astype("uint8")
 
-    # Find only most external contours in padded image
-    contours, _ = cv2.findContours(
+    # Find all contours in padded image
+    contours, hierarchy = cv2.findContours(
         padded_binary_mask, cv2.RETR_TREE, cv2.CHAIN_APPROX_NONE
     )
+
+    # Hierarchy for a contour(c) is represented by: [Next_c_idx, Previous_c_idx, First_Child_c_idx, Parent_c_idx]
+    if hierarchy is not None:
+        # Search for parent contours where are more than 1 contour and set polygon annotation as false
+        if len(hierarchy[0]) > 1 and any([c[3] != -1 for c in hierarchy[0]]):
+            as_polygon = False
 
     for i, contour in enumerate(contours):
 
@@ -60,19 +67,14 @@ def create_annotation_infos(
         # Subtract 1 because of previous padding
         contour = np.subtract(contour, 1)
 
-        # Make sure that the contour does not include values < 0 (possible -1, after subtraction above)
+        # Make sure that the contour does not include values < 0 (possible -1, after find contours + subtraction above)
         contour[contour < 0] = 0
-        segmentation = contour.ravel().tolist()
 
         # Find original mask of instance defined by contours
         img = np.zeros((binary_mask.shape[0], binary_mask.shape[1]), dtype=np.uint8)
         cv2.fillPoly(img, pts=[contour], color=255)
         instance_binary_mask = np.where(img == 255, 1, 0)
         instance_binary_mask = instance_binary_mask & binary_mask
-
-        # It means the contour belonged to a hole
-        if instance_binary_mask.sum() < len(contour) / 2:
-            continue
 
         # Create uncompressed RLE format from binary mask
         instance_binary_mask_fr = np.asfortranarray(instance_binary_mask)
@@ -99,13 +101,14 @@ def create_annotation_infos(
             "height": binary_mask.shape[0],
         }
 
-        # If only 1 contour in image, we can define it as a polygon (we are sure no holes are present)
-        # Otherwise we will proceed to encode mask in RLE format (thst takes holes into consideration)
-        if len(contours) <= 1:
+        # Store annotation in corresponding format
+        if as_polygon:
+            segmentation = contour.ravel().tolist()
             annotation_info["segmentation"] = [segmentation]
         else:
             annotation_info["segmentation"] = rle
 
+        # Increase instance id
         annotation_id += 1
 
         annotation_infos.append(annotation_info)

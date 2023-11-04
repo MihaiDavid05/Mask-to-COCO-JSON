@@ -83,9 +83,11 @@ class BaseExporter:
                         color = generate_color(self.palette)
                         self.palette.append(color)
                     print("Note: Took color palette from mmdet (80 classes) and built upon it")
+
                 elif nr_coco_classes > nr_curr_classes:
                     self.palette = self.palette[:nr_curr_classes]
                     print("Note: Took color palette from mmdet (80 classes) and selected from it")
+
             except ModuleNotFoundError:
                 # Generate list of new random colors
                 colors = []
@@ -172,6 +174,7 @@ class BaseExporter:
                     image_id,
                     category_info,
                     binary_mask,
+                    image_file,
                     filter_area=filter_area
                 )
                 # Update annotations and instance is
