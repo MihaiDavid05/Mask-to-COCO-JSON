@@ -1,6 +1,6 @@
 # Masks (with holes) exporter to COCO JSON annotation format
 
-*NOTE*: The exporter currently works only from binary masks to COCO. Other base formats will be supported.
+*NOTE*: The exporter currently works only from masks to COCO. Other base formats will be supported in the future.
 
 This exporter is a bit special in a sense that it **preserves holes** in the custom binary masks and, thus,
 creates COCO JSON annotations files that **consider holes in different objects/instances.**
@@ -16,12 +16,12 @@ More than this:
 - Provides function for converting from binary to uncompressed RLE and from uncompressed RLE to compressed RLE
 - It is easily extendable
 
-## Installation
+## :gear: Installation
 ```bash
 pip install -r requirements.txt
 ```
 
-## Code structure
+## :file_folder: Code structure
 ```
 ├───data
 │   └───<YOUR_DATASETS_DIRECTORIES_HERE>
@@ -33,7 +33,7 @@ pip install -r requirements.txt
 
 ```
 
-## Custom dataset
+## :notebook: Custom dataset
 The current implementation provides exporter only for UECFOODPIXCOMPLETE dataset, but you can very easily create a custom exporter by:
 - inheriting `BaseExporter` and overriding `get_classes_names_ids()` method in `datasets.py`
 - importing your custom exporter in main.py
@@ -58,7 +58,7 @@ class CustomExporter(BaseExporter):
        return class ids, class names
 ```
 
-## Functionalities and usage
+## :zap: Functionalities and usage
 The main functionalities (self-explainable) are:
 - `exporter.export(filter_area)`
 - `exporter.save()`
@@ -89,10 +89,10 @@ The exporter will create an `annotations` directory with 2 JSON files, one for `
 ```
 You can easily use your dataset as a CustomClass that perfectly mimics COCO (only the classes and the palette are different).
 
-## Notes
+## :clipboard: Notes
 Please read the description of `mask_channel` CLI argument and make sure you understand the mask options and the color palette.
 
-## TODO
+## TODOs
 - [ ] Add typing
 - [ ] Support other base formats
 - [ ] Add more datasets
