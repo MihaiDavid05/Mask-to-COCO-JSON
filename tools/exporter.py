@@ -6,7 +6,7 @@ from abc import abstractmethod
 import cv2
 import numpy as np
 from tqdm import tqdm
-
+from PIL import Image
 from tools.utils import create_image_info, create_annotation_infos, generate_color
 
 
@@ -31,8 +31,8 @@ class BaseExporter:
         os.makedirs(self.output_ann_path, exist_ok=True)
 
         if mask_channel == -1 and palette is None:
-            raise ValueError("if mask_channel is -1 you need to provide palette as a list of RGB tuples"
-                             "where the index of the color tuple in the list, corresponds with the class id")
+            raise ValueError("if mask_channel is -1 you need to provide palette as a list of RGB tuples "
+                             "where the index of the color tuple in the list corresponds with the class id")
 
         # Set licenses and info in coco output
         self.coco_output = {
@@ -79,12 +79,13 @@ class BaseExporter:
                 nr_coco_classes = len(self.palette)
                 nr_curr_classes = len(class_ids)
                 if nr_curr_classes > nr_coco_classes:
-                    for i in range(nr_coco_classes, nr_curr_classes + 1):
+                    for i in range(nr_coco_classes, nr_curr_classes):
                         color = generate_color(self.palette)
                         self.palette.append(color)
+                    print("Note: Took color palette from mmdet (80 classes) and built upon it")
                 elif nr_coco_classes > nr_curr_classes:
                     self.palette = self.palette[:nr_curr_classes]
-                print("Note: Took color palette from mmdet (80 classes) and built upon/selected from it")
+                    print("Note: Took color palette from mmdet (80 classes) and selected from it")
             except ModuleNotFoundError:
                 # Generate list of new random colors
                 colors = []
@@ -130,6 +131,7 @@ class BaseExporter:
             # Skip the image without label file
             base_name = str(os.path.basename(image_file).split('.')[0]) + self.ext_ann
             if base_name not in label_base_files:
+                print(f"File {base_name} does not have a corresponding label")
                 continue
 
             label_file = os.path.join(self.ann_path, os.path.splitext(base_name)[0] + self.ext_ann)
@@ -139,11 +141,14 @@ class BaseExporter:
             images.append(image_info)
 
             if self.channel == -1:
-                # Mask resides in 3 channels (read as BGR !!!)
+                # Mask resides in 3 channels (reads as BGR)
                 orig_mask = cv2.imread(label_file)
+                img = Image.fromarray(orig_mask)
+                print(img.mode)
             else:
-                # Mask resides in 1 channel
-                orig_mask = cv2.imread(label_file)[..., self.channel]
+                # Mask resides in 1 channel (imread reads in 3 channels-BGR, even if original was 'greyscale')
+                orig_mask = cv2.imread(label_file)
+                orig_mask = orig_mask[..., self.channel]
 
             # Go through each existing category
             for category_dict in self.categories:
@@ -152,11 +157,11 @@ class BaseExporter:
                 category_info = {
                     "id": class_id,
                     "is_crowd": 0,
-                }  # does not support the crowded type
+                }  # does not support crowded type
 
                 if self.channel == -1:
-                    # Match the whole mask (RGB) color
-                    binary_mask = np.all(orig_mask == np.transpose(color, (2, 1, 0)), axis=-1).astype("uint8")
+                    # Match the whole mask to color
+                    binary_mask = np.all(orig_mask == np.array(color), axis=-1).astype("uint8")
                 else:
                     # Match the class id in a categorical one channel mask
                     binary_mask = np.array(orig_mask == int(class_id)).astype("uint8")

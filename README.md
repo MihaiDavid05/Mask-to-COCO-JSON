@@ -10,7 +10,8 @@ Otherwise, masks are still exported into polygons. Different from original COCO,
 
 More than this:
 - It supports multiple formats of masks (see `main.py` CLI args)
-- Offers testing and visualization of exported results
+- Offers testing and visualization of exported annotations
+- Provides function for converting from binary to uncompressed RLE and from uncompressed RLE to compressed RLE
 - It is easily extendable
 
 ## Installation
@@ -19,7 +20,7 @@ pip install -r requirements.txt
 ```
 
 ## Code structure
-```commandline
+```
 ├───data
 │   └───<YOUR_DATASETS_DIRECTORIES_HERE>
 ├───tools
@@ -31,7 +32,7 @@ pip install -r requirements.txt
 ```
 
 ## Custom dataset
-The current implementation provides an exporter for UECFOODPIXCOMPLETE dataset, but you can very easily create a custom exporter by:
+The current implementation provides exporter only for UECFOODPIXCOMPLETE dataset, but you can very easily create a custom exporter by:
 - inheriting `BaseExporter` and overriding `get_classes_names_ids()` method in `datasets.py`
 - importing your custom exporter in main.py
 
@@ -50,6 +51,7 @@ class CustomExporter(BaseExporter):
     stored in a file (or somewhere else).
     """
        <YOUR CODE>
+       # Here you could exclude a class, for example background from annotations, if you wish
        
        return class ids, class names
 ```
@@ -75,7 +77,7 @@ python main.py data/UECFOODPIXCOMPLETE/data/UECFoodPIXCOMPLETE/train/img/
 ```
 
 The exporter will create an `annotations` directory with 2 JSON files, one for `train` and one for `val`, exactly like in COCO format.
-```commandline
+```
 ├───data
 │   └───<YOUR_DATASET>
 │       ├─── ...
@@ -87,3 +89,7 @@ You can easily use your dataset as a CustomClass that perfectly mimics COCO (onl
 
 ## Notes
 Please read the description of `mask_channel` CLI argument and make sure you understand the mask options and the color palette.
+
+## TODO
+- [ ] Add typing
+- [ ] Add more datasets

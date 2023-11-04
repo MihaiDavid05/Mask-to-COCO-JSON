@@ -76,10 +76,10 @@ def create_annotation_infos(
 
         # Create uncompressed RLE format from binary mask
         instance_binary_mask_fr = np.asfortranarray(instance_binary_mask)
-        rle = binary_mask_to_rle(instance_binary_mask_fr)
+        rle = binary_mask_to_unc_rle(instance_binary_mask_fr)
 
         # Create compressed RLE format from uncompressed RLE and find area and bbox
-        compressed_rle = mask.frPyObjects(rle, rle.get("size")[0], rle.get("size")[1])
+        compressed_rle = unc_rle_to_comp_rle(rle)
         seg_area_rle = int(mask.area(compressed_rle))
         bounding_box_rle = mask.toBbox(compressed_rle).tolist()
 
@@ -113,7 +113,7 @@ def create_annotation_infos(
     return annotation_infos, annotation_id
 
 
-def binary_mask_to_rle(binary_mask):
+def binary_mask_to_unc_rle(binary_mask):
     # Define COCO format and initialize
     rle = {"counts": [], "size": list(binary_mask.shape)}
     counts = rle.get("counts")
@@ -133,6 +133,11 @@ def binary_mask_to_rle(binary_mask):
     counts.append(running_length)
 
     return rle
+
+
+def unc_rle_to_comp_rle(unc_rle):
+    compressed_rle = mask.frPyObjects(unc_rle, unc_rle.get("size")[0], unc_rle.get("size")[1])
+    return compressed_rle
 
 
 def check_export_results(img_path, output_ann_path, output_dir, cats):

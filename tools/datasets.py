@@ -17,7 +17,7 @@ class UECFoodPixCompleteExporter(BaseExporter):
         # Lines with ids and names separated by tab
         data = np.array([line[:-1].rstrip().split("\t") for line in data])
 
-        # Ignore header from text file.
+        # Ignore header from text file (here, needed).
         # You may also skip some classes here, for example background if you don't need it in annotations.
         class_ids, class_names = data[1:, 0], data[1:, 1]
 
