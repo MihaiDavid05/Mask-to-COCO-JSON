@@ -16,6 +16,8 @@ More than this:
 - Provides function for converting from binary to uncompressed RLE and from uncompressed RLE to compressed RLE
 - It is easily extendable
 
+Example of resulted exportation:
+![Mask with holes](resources/img.png)
 ## :gear: Installation
 ```bash
 pip install -r requirements.txt
@@ -93,6 +95,5 @@ You can easily use your dataset as a CustomClass that perfectly mimics COCO (onl
 Please read the description of `mask_channel` CLI argument and make sure you understand the mask options and the color palette.
 
 ## TODOs
-- [ ] Add typing
-- [ ] Support other base formats
+- [ ] Support base formats other than masks
 - [ ] Add more datasets
