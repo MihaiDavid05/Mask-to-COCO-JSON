@@ -1,6 +1,6 @@
 # Masks (with holes) exporter to COCO JSON annotation format
 
-This exporter is a bit special in a sense that it takes into consideration holes in the custom binary masks and, thus,
+This exporter is a bit special in a sense that it **preserves holes** in the custom binary masks and, thus,
 creates COCO JSON annotations files that **consider holes in different objects/instances.**
 
 Even though the original COCO annotations format DOES NOT take into consideration the holes in the objects, you can export other datasets in COCO format, such that holes ARE taken into consideration.
@@ -10,7 +10,7 @@ Otherwise, masks are still exported into polygons. Different from original COCO,
 
 More than this:
 - It supports multiple formats of masks (see `main.py` CLI args)
-- Offers visualizations of exported results
+- Offers testing and visualization of exported results
 - It is easily extendable
 
 ## Installation
@@ -55,14 +55,14 @@ class CustomExporter(BaseExporter):
 ```
 
 ## Functionalities and usage
-The main functionalities are:
+The main functionalities (self-explainable) are:
 - `exporter.export(filter_area)`
 - `exporter.save()`
 - `check_export_results()`
 
-In `main.py` you will find instructions about the usage in the CLI arguments details and step by step code that uses all the functionalities.
+In `main.py` you will find instructions about the usage by reading the CLI arguments details. Also, a step by step code that uses all the functionalities is provided.
 
-For UECFOODPIXCOMPLETE, here is an example of call:
+For UECFOODPIXCOMPLETE, here is an example of program call:
 ```bash
 python main.py data/UECFOODPIXCOMPLETE/data/UECFoodPIXCOMPLETE/train/img/ 
                data/UECFOODPIXCOMPLETE/data/UECFoodPIXCOMPLETE/train/mask/ 
@@ -75,5 +75,14 @@ python main.py data/UECFOODPIXCOMPLETE/data/UECFoodPIXCOMPLETE/train/img/
 ```
 
 The exporter will create an `annotations` directory with 2 JSON files, one for `train` and one for `val`, exactly like in COCO format.
+```commandline
+├───data
+│   └───<YOUR_DATASET>
+│       └───annotations
+│           ├───instances_val2017.json
+│           └───instances_train2017.json
+```
+You can easily use your dataset as a CustomClass that perfectly mimics COCO (only the classes and the palette are different).
+
 ## Notes
 Please read the description of `mask_channel` CLI argument and make sure you understand the mask options and the color palette.
