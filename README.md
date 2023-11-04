@@ -37,11 +37,11 @@ pip install -r requirements.txt
 
 ## :notebook: Custom dataset
 The current implementation provides exporter only for UECFOODPIXCOMPLETE dataset, but you can very easily create a custom exporter by:
-- inheriting `BaseExporter` and overriding `get_classes_names_ids()` method in `datasets.py`
+- in `datasets.py`, inherit `BaseExporter` and override `get_classes_names_ids()` method
 - importing your custom exporter in main.py
 
 ```bash
-class CustomExporter(BaseExporter):
+class MyExporter(BaseExporter):
 
     def __init__(self, img_path, ann_path, cat_file_path, output_ann_path, split, mask_channel, ext_ann=".png",
                  ext_img=".jpg", palette=None):
