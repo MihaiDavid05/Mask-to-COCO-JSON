@@ -174,7 +174,6 @@ class BaseExporter:
                     image_id,
                     category_info,
                     binary_mask,
-                    image_file,
                     filter_area=filter_area
                 )
                 # Update annotations and instance is

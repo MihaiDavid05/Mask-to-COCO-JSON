@@ -37,7 +37,6 @@ def create_annotation_infos(
         image_id,
         category_info,
         binary_mask,
-        img_filename,
         filter_area=4
 ):
     annotation_infos = []
@@ -95,6 +94,7 @@ def create_annotation_infos(
             "image_id": image_id,
             "category_id": category_info["id"],
             "iscrowd": category_info["is_crowd"],
+            # we keep area and bbox in rle format as they are more accurate than polygon
             "bbox": bounding_box_rle,
             "area": seg_area_rle,
             "width": binary_mask.shape[1],
