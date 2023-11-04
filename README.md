@@ -78,6 +78,7 @@ The exporter will create an `annotations` directory with 2 JSON files, one for `
 ```commandline
 ├───data
 │   └───<YOUR_DATASET>
+│       ├─── ...
 │       └───annotations
 │           ├───instances_val2017.json
 │           └───instances_train2017.json
