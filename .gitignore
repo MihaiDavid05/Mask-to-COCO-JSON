@@ -1,0 +1,7 @@
+# Folders
+data/
+.idea/
+.output/
+__pycache__/
+
+# Files
