@@ -16,8 +16,8 @@ More than this:
 - Provides function for converting from binary to uncompressed RLE and from uncompressed RLE to compressed RLE
 - It is easily extendable
 
-Example of resulted exportation:
-![Mask with holes](resources/img.png)
+Example of resulted exportation VS original mask:
+![Mask with holes](resources/img.png) ![Original mask](resources/img_1.png)
 ## :gear: Installation
 ```bash
 pip install -r requirements.txt
