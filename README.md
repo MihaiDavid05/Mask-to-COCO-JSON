@@ -1,6 +1,7 @@
 # :arrows_counterclockwise: Masks (with holes) exporter to COCO JSON annotation format
 
-*NOTE*: The exporter currently works only from masks to COCO. Other base formats will be supported in the future.
+Supports:
+- Masks in Image/PNG format ->  COCO JSON format (RLE or Polygon) for multi-class Instance Segmentation.
 
 This exporter is a bit special in a sense that it **preserves holes** in the custom binary masks and, thus,
 creates COCO JSON annotations files that **consider holes in different objects/instances.**
