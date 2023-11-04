@@ -43,7 +43,7 @@ class CustomExporter(BaseExporter):
         super().__init__(img_path, ann_path, cat_file_path, output_ann_path, split, mask_channel, ext_ann,
                          ext_img, palette)
 
-    # This method should be overwritten for any subclass
+
     def _get_classes_names_ids(self):
     """
     Creates class_ids and class_names arrays, according to a specific mapping, 

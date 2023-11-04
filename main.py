@@ -77,6 +77,7 @@ def parse_args():
 
 
 if __name__ == "__main__":
+
     # Parse CLI arguments
     args = parse_args()
     result_masks_output_dir = args.masks_output_path

@@ -25,13 +25,14 @@ class BaseExporter:
         self.supercategory = supercategory
         self.categories = None
 
+        # Create annotations directory if it does not exists
         self.output_ann_path = output_ann_path
         self.output_ann_path = os.path.join(self.output_ann_path, "annotations")
         os.makedirs(self.output_ann_path, exist_ok=True)
 
         if mask_channel == -1 and palette is None:
-            raise ValueError("if mask_channel is -1 you need to provide color palette as a list of RGB tuples"
-                             "where the index of the color in the list, correspond with the class id")
+            raise ValueError("if mask_channel is -1 you need to provide palette as a list of RGB tuples"
+                             "where the index of the color tuple in the list, corresponds with the class id")
 
         # Set licenses and info in coco output
         self.coco_output = {
@@ -45,10 +46,16 @@ class BaseExporter:
             "info": {"description": "dataset exported in COCO Format"}
         }
 
+    @abstractmethod
+    def _get_classes_names_ids(self):
+        pass
+
     def export(self, filter_area=4):
+        # Fill categories
         self.categories = self._build_categories()
         self.coco_output["categories"] = self.categories
 
+        # Fill images and annotations
         images, annotations = self._build_images_annotations(filter_area)
         self.coco_output["images"] = images
         self.coco_output["annotations"] = annotations
@@ -62,10 +69,6 @@ class BaseExporter:
         with open(self.output_ann_path, "w") as output_json_file:
             json.dump(self.coco_output, output_json_file)
 
-    @abstractmethod
-    def _get_classes_names_ids(self):
-        pass
-
     def _build_palette(self, class_ids):
         # Set color palette (get original from mmdet, if available)
         if self.palette is None:
@@ -74,20 +77,24 @@ class BaseExporter:
 
                 self.palette = mmdet.datasets.coco.CocoDataset.PALETTE
                 nr_coco_classes = len(self.palette)
-                if len(class_ids) > nr_coco_classes:
-                    for i in range(nr_coco_classes, len(class_ids) + 1):
+                nr_curr_classes = len(class_ids)
+                if nr_curr_classes > nr_coco_classes:
+                    for i in range(nr_coco_classes, nr_curr_classes + 1):
                         self.palette.append(self.palette[i % len(self.palette)])
+                elif nr_coco_classes > nr_curr_classes:
+                    self.palette = self.palette[:nr_curr_classes]
                 print("Note: Took color palette from mmdet and build it circularly if more than 80 classes")
             except ModuleNotFoundError:
-                print("Note: Will build random color palette")
                 # Generate list of new random colors
                 colors = []
+                # TODO: the colors can be improved
                 while len(colors) < len(class_ids):
                     color = np.random.choice(range(256), size=3)
                     color = tuple([int(c) for c in color])
                     if color not in colors:
                         colors.append(color)
                 self.palette = colors
+                print("Note: Random color palette was generated")
 
     def _build_categories(self):
         categories = []
@@ -100,13 +107,8 @@ class BaseExporter:
                 "id": int(cls_id),
                 "name": str(class_names[i]),
                 "supercategory": self.supercategory,
+                "color": list(self.palette[i])
             }
-            if len(self.palette) == len(class_ids):
-                # If palette of original 80 classes exist, go circular if more classes
-                data.update({"color": list(self.palette[i % len(self.palette)])})
-            else:
-                data.update({"color": list(self.palette[i])})
-
             categories.append(data)
 
         return categories
@@ -115,34 +117,31 @@ class BaseExporter:
         # Initialize
         images = []
         annotations = []
-
-        # initial ids
         image_id = 1
         segmentation_id = 1
 
-        # find all images and masks
+        # Find all images and masks
         image_files = glob.glob(self.img_path + f"*{self.ext_img}")
         label_files = glob.glob(self.ann_path + f"*{self.ext_ann}")
         label_base_files = [os.path.basename(filename) for filename in label_files]
 
-        # go through each image
+        # Go through each image
         for image_file in tqdm(image_files):
             image = cv2.imread(image_file)
 
-            # skip the image without label file
+            # Skip the image without label file
             base_name = str(os.path.basename(image_file).split('.')[0]) + self.ext_ann
             if base_name not in label_base_files:
                 continue
 
             label_file = os.path.join(self.ann_path, os.path.splitext(base_name)[0] + self.ext_ann)
-
             image_info = create_image_info(
                 image_id, os.path.basename(image_file), image.shape
             )
             images.append(image_info)
 
             if self.channel == -1:
-                # Mask resides in 3 channels
+                # Mask resides in 3 channels (read as BGR !!!)
                 orig_mask = cv2.imread(label_file)
             else:
                 # Mask resides in 1 channel
@@ -158,8 +157,10 @@ class BaseExporter:
                 }  # does not support the crowded type
 
                 if self.channel == -1:
-                    binary_mask = np.all(orig_mask == color, axis=-1).astype("uint8")
+                    # Match the whole mask (RGB) color
+                    binary_mask = np.all(orig_mask == np.transpose(color, (2, 1, 0)), axis=-1).astype("uint8")
                 else:
+                    # Match the class id in a categorical one channel mask
                     binary_mask = np.array(orig_mask == int(class_id)).astype("uint8")
 
                 # Create annotation info
@@ -170,6 +171,7 @@ class BaseExporter:
                     binary_mask,
                     filter_area=filter_area
                 )
+                # Update annotations and instance is
                 annotations.extend(annotation_info)
                 segmentation_id = annotation_id
 

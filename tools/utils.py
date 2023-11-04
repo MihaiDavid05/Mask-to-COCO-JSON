@@ -114,10 +114,9 @@ def create_annotation_infos(
 
 
 def binary_mask_to_rle(binary_mask):
-    # Define COCO format
+    # Define COCO format and initialize
     rle = {"counts": [], "size": list(binary_mask.shape)}
     counts = rle.get("counts")
-
     last_elem = 0
     running_length = 0
 
