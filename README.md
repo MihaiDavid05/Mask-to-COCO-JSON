@@ -1,5 +1,7 @@
 # Masks (with holes) exporter to COCO JSON annotation format
 
+*NOTE*: The exporter currently works only from binary masks to COCO. Other base formats will be supported.
+
 This exporter is a bit special in a sense that it **preserves holes** in the custom binary masks and, thus,
 creates COCO JSON annotations files that **consider holes in different objects/instances.**
 
@@ -92,4 +94,5 @@ Please read the description of `mask_channel` CLI argument and make sure you und
 
 ## TODO
 - [ ] Add typing
+- [ ] Support other base formats
 - [ ] Add more datasets
