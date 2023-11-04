@@ -154,3 +154,15 @@ def check_export_results(img_path, output_ann_path, output_dir, cats):
         coco.showAnns(annotations)
         plt.savefig(os.path.join(output_dir, f"{img['file_name'].split('.')[0]}.png"))
         plt.close()
+
+
+def generate_color(existing_colors):
+    found = False
+    color = (0, 0, 0)
+    while not found:
+        # TODO: the colors can be improved
+        color = np.random.choice(range(256), size=3)
+        color = tuple([int(c) for c in color])
+        if color not in existing_colors:
+            found = True
+    return color

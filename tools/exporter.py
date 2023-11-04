@@ -7,7 +7,7 @@ import cv2
 import numpy as np
 from tqdm import tqdm
 
-from tools.utils import create_image_info, create_annotation_infos
+from tools.utils import create_image_info, create_annotation_infos, generate_color
 
 
 class BaseExporter:
@@ -80,19 +80,17 @@ class BaseExporter:
                 nr_curr_classes = len(class_ids)
                 if nr_curr_classes > nr_coco_classes:
                     for i in range(nr_coco_classes, nr_curr_classes + 1):
-                        self.palette.append(self.palette[i % len(self.palette)])
+                        color = generate_color(self.palette)
+                        self.palette.append(color)
                 elif nr_coco_classes > nr_curr_classes:
                     self.palette = self.palette[:nr_curr_classes]
-                print("Note: Took color palette from mmdet and build it circularly if more than 80 classes")
+                print("Note: Took color palette from mmdet (80 classes) and built upon/selected from it")
             except ModuleNotFoundError:
                 # Generate list of new random colors
                 colors = []
-                # TODO: the colors can be improved
                 while len(colors) < len(class_ids):
-                    color = np.random.choice(range(256), size=3)
-                    color = tuple([int(c) for c in color])
-                    if color not in colors:
-                        colors.append(color)
+                    color = generate_color(colors)
+                    colors.append(color)
                 self.palette = colors
                 print("Note: Random color palette was generated")
 
