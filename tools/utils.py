@@ -2,6 +2,8 @@ import datetime
 import os
 
 import cv2
+from typing import Tuple, Dict, Union, List, Any
+from numpy.typing import NDArray
 import matplotlib.pyplot as plt
 import numpy as np
 from pycocotools import mask
@@ -10,14 +12,18 @@ from skimage import io
 
 
 def create_image_info(
-        image_id,
-        file_name,
-        image_size,
-        date_captured=datetime.datetime.utcnow().isoformat(" "),
-        license_id=1,
-        coco_url="",
-        flickr_url="",
-):
+        image_id: int,
+        file_name: str,
+        image_size: Tuple[int, int],
+        date_captured: str = datetime.datetime.utcnow().isoformat(" "),
+        license_id: int = 1,
+        coco_url: str = "",
+        flickr_url: str = "",
+) -> Dict[str, Union[int, str]]:
+    """
+    Build a dictionary with information for one image
+
+    """
     image_info = {
         "id": image_id,
         "file_name": file_name,
@@ -33,12 +39,25 @@ def create_image_info(
 
 
 def create_annotation_infos(
-        annotation_id,
-        image_id,
-        category_info,
-        binary_mask,
-        filter_area=4
-):
+        annotation_id: int,
+        image_id: int,
+        category_info: Dict[str, int],
+        binary_mask: NDArray[np.uint8],
+        filter_area: int = 4
+) -> Tuple[Any, int]:
+    """
+     Builds list of dictionaries for 'annotations' field in COCO format
+
+    Args:
+        annotation_id: current annotation id (among all instances)
+        image_id: id of the image
+        category_info: dictionary with category information
+        binary_mask: mask corresponding to instances from a specific class in an image
+        filter_area: area under which objects are discarded (considered to be too small)
+
+    Returns: tuple of annotations from a specific class from an image amd the annotations counter
+
+    """
     annotation_infos = []
     as_polygon = True
     # Pad mask to close contours of shapes which start and end at an edge
@@ -116,7 +135,15 @@ def create_annotation_infos(
     return annotation_infos, annotation_id
 
 
-def binary_mask_to_unc_rle(binary_mask):
+def binary_mask_to_unc_rle(binary_mask: NDArray[np.intc]) -> Dict[str, List[int]]:
+    """
+    Convert a binary mask into uncompressed RLE format
+    Args:
+        binary_mask: mask corresponding to instances from a specific class in an image
+
+    Returns: mask in RLE uncompressed format (a dictionary with 2 keys, 'counts' and 'size')
+
+    """
     # Define COCO format and initialize
     rle = {"counts": [], "size": list(binary_mask.shape)}
     counts = rle.get("counts")
@@ -138,17 +165,30 @@ def binary_mask_to_unc_rle(binary_mask):
     return rle
 
 
-def unc_rle_to_comp_rle(unc_rle):
-    compressed_rle = mask.frPyObjects(unc_rle, unc_rle.get("size")[0], unc_rle.get("size")[1])
-    return compressed_rle
+def unc_rle_to_comp_rle(unc_rle: Dict[str, List[int]]) -> Dict[str, Union[List[int], bytes]]:
+    """
+    Convert RLE uncompressed format in RLE compressed format
+    Args:
+        unc_rle: mask in RLE uncompressed format
+    """
+    return mask.frPyObjects(unc_rle, unc_rle.get("size")[0], unc_rle.get("size")[1])
 
 
-def check_export_results(img_path, output_ann_path, output_dir, cats):
+def check_export_results(img_path: str, json_file_path: str, output_dir: str, cats: List[int]):
+    """
+    Plots images and masks from the exported-to-COCO annotation files
+    Args:
+        img_path: path to images directory
+        json_file_path: path to COCO JSON file
+        output_dir: path to directory where to save images with masks
+        cats: images containing categories/class ids from thi list will be saved for visualization
+
+    """
     # Create directory if it does not exist
     os.makedirs(output_dir, exist_ok=True)
 
     # Load annotations in coco format
-    coco = COCO(output_ann_path)
+    coco = COCO(json_file_path)
     img_ids = coco.getImgIds(catIds=cats)
 
     # Display and save all images with the requested categories
@@ -164,7 +204,15 @@ def check_export_results(img_path, output_ann_path, output_dir, cats):
         plt.close()
 
 
-def generate_color(existing_colors):
+def generate_color(existing_colors: List[Tuple[int, int, int]]):
+    """
+    Generate a new random color that does not exist in the palette
+    Args:
+        existing_colors: List of existing colors in the palette
+
+    Returns: a new color
+
+    """
     found = False
     color = (0, 0, 0)
     while not found:

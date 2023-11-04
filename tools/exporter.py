@@ -2,18 +2,22 @@ import glob
 import json
 import os
 from abc import abstractmethod
-
+from typing import Dict, Tuple, List, Optional, Any, Union
+from numpy.typing import NDArray
 import cv2
 import numpy as np
-from tqdm import tqdm
 from PIL import Image
+from tqdm import tqdm
+
 from tools.utils import create_image_info, create_annotation_infos, generate_color
 
 
 class BaseExporter:
 
-    def __init__(self, img_path, ann_path, cat_file_path, output_ann_path, split, mask_channel, ext_ann=".png",
-                 ext_img=".jpg", palette=None, supercategory="common-object"):
+    def __init__(self, img_path: str, ann_path: str, cat_file_path: str, output_ann_path: str, split: str,
+                 mask_channel: int, ext_ann: str = ".png", ext_img: str = ".jpg",
+                 palette: Optional[List[Tuple[int, int, int]]] = None, supercategory: str = "common-object"):
+
         self.img_path = img_path
         self.ann_path = ann_path
         self.cat_path = cat_file_path
@@ -47,10 +51,25 @@ class BaseExporter:
         }
 
     @abstractmethod
-    def _get_classes_names_ids(self):
+    def _get_classes_names_ids(self) -> Tuple[NDArray[str], NDArray[str]]:
+        """
+        Build classes ids and names into 2 numpy arrays, from a local file/source.
+        A class and a name from the same index correspond to each other.
+
+        Returns: class_ids, class_names
+
+        """
         pass
 
-    def export(self, filter_area=4):
+    def export(self, filter_area: int = 4) -> Dict[str, Union[List, Dict[str, Any]]]:
+        """
+        Exports annotations to COCO JSON format
+        Args:
+            filter_area: area under which objects are discarded (considered to be too small)
+
+        Returns: Dictionary formatted in COCO style
+
+        """
         # Fill categories
         self.categories = self._build_categories()
         self.coco_output["categories"] = self.categories
@@ -63,13 +82,26 @@ class BaseExporter:
         return self.coco_output
 
     def save(self):
+        """
+        Saves COCO-like JSON formatted annotations to file
+
+        """
         self.output_ann_path = os.path.join(self.output_ann_path, "instances_{}2017.json".format(
             "val" if self.split == "test" else self.split)
                                             )
         with open(self.output_ann_path, "w") as output_json_file:
             json.dump(self.coco_output, output_json_file)
 
-    def _build_palette(self, class_ids):
+    def _build_palette(self, class_ids: NDArray[str]):
+        """
+        Sets color palette for classes, if not already set.
+        If mmdet is installed in your environment it gets the palette defined in that project for COCO (80 classes).
+        It adds or select a specific number of random colors, depending on the number of classes in your dataset.
+        If mmdet is not installed the entire palette woll be build from random distinctive colors.
+        Args:
+            class_ids: numpy array with classes ids
+
+        """
         # Set color palette (get original from mmdet, if available)
         if self.palette is None:
             try:
@@ -97,7 +129,13 @@ class BaseExporter:
                 self.palette = colors
                 print("Note: Random color palette was generated")
 
-    def _build_categories(self):
+    def _build_categories(self) -> List[Dict[str, Union[int, str, List]]]:
+        """
+        Builds content for 'categories' key in the final COCO formatted JSON.
+
+        Returns: List with dictionaries for categories available in your dataset
+
+        """
         categories = []
         class_ids, class_names = self._get_classes_names_ids()
 
@@ -114,7 +152,15 @@ class BaseExporter:
 
         return categories
 
-    def _build_images_annotations(self, filter_area=4):
+    def _build_images_annotations(self, filter_area: int = 4) -> Tuple[List[Dict[str, Any]], List[Dict[str, Any]]]:
+        """
+        Build 'images' and 'annotations' dictionary entries in the COCO JSON format
+        Args:
+            filter_area: area under which objects are discarded (considered to be too small)
+
+        Returns: 2 lists of dictionaries, mainly: images, annotations
+
+        """
         # Initialize
         images = []
         annotations = []
