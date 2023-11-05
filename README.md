@@ -12,12 +12,12 @@ This is achieved by exporting the masks in uncompressed RLE format, where is the
 Otherwise, masks are still exported into polygons. Different from original COCO, the RLE format is not ONLY used for "is_crowd" instances, but for other instances too. 
 
 More than this:
-- It supports multiple formats of masks (see `main.py` CLI args)
+- It supports multiple formats of masks (see [here](https://github.com/MihaiDavid05/Mask-to-COCO-JSON/blob/5a7eb3b2233d09cfd8d79165b1da76465080e8c5/main.py#L39) in `main.py` CLI args)
 - Offers testing and visualization of exported annotations
 - Provides function for converting from binary to uncompressed RLE and from uncompressed RLE to compressed RLE
 - It is easily extendable
 
-Example of resulted exportation VS original mask:
+Example of resulting mask exportation preserving holes VS original mask with holes:
 ![Mask with holes](resources/img.png) ![Original mask](resources/img_1.png)
 ## :gear: Installation
 ```bash
