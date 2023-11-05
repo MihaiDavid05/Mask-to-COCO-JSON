@@ -1,9 +1,9 @@
-# :arrows_counterclockwise: Masks (with holes) exporter to COCO JSON annotation format
+# :arrows_counterclockwise: Masks (with holes) exporter to COCO JSON annotation format for instance segmentation
 
 Supports:
 - **Masks in Image/PNG format ->  COCO JSON format (RLE or Polygon) for multi-class Instance Segmentation.**
 
-This exporter is a bit special in a sense that it **preserves holes** in the custom binary masks and, thus,
+This exporter is a bit special in a sense that it **preserves holes** in the custom masks and, thus,
 creates COCO JSON annotations files that **consider holes in different objects/instances.**
 
 Even though the original COCO annotations format DOES NOT take into consideration the holes in the objects, you can export other datasets in COCO format, such that holes ARE taken into consideration.
@@ -50,15 +50,17 @@ class MyExporter(BaseExporter):
                          ext_img, palette)
 
 
-    def _get_classes_names_ids(self):
-    """
-    Creates class_ids and class_names arrays, according to a specific mapping, 
-    stored in a file (or somewhere else).
-    """
-       <YOUR CODE>
-       # Here you could exclude a class, for example background from annotations, if you wish
-       
-       return class ids, class names
+    def _get_classes_names_ids(self) -> Tuple[NDArray[str], NDArray[str]]:
+     """
+     Build classes ids and names into 2 numpy arrays, from a local file/source.
+     A class and a name from the same index correspond to each other.
+
+     Returns: class_ids, class_names
+
+     """
+        pass
+
+       # <YOUR CODE HERE> -> you could also exclude a class from annotations, for example background, if you wish
 ```
 
 ## :zap: Functionalities and usage
@@ -67,7 +69,7 @@ The main functionalities (self-explainable) are:
 - `exporter.save()`
 - `check_export_results()`
 
-In `main.py` you will find instructions about the usage by reading the CLI arguments details. Also, a step by step code that uses all the functionalities is provided.
+In `main.py` you will find instructions about the usage in the CLI arguments details. Also, a step by step code that uses all the functionalities is provided in this script.
 
 For UECFOODPIXCOMPLETE, here is an example of program call:
 ```bash
@@ -81,7 +83,7 @@ python main.py data/UECFOODPIXCOMPLETE/data/UECFoodPIXCOMPLETE/train/img/
                --cats []
 ```
 
-The exporter will create an `annotations` directory with 2 JSON files, one for `train` and one for `val`, exactly like in COCO format.
+The exporter will create an `annotations` directory with 2 JSON files, one for `train` and one for `val`, exactly like in COCO format:
 ```
 ├───data
 │   └───<YOUR_DATASET>
@@ -90,11 +92,10 @@ The exporter will create an `annotations` directory with 2 JSON files, one for `
 │           ├───instances_val2017.json
 │           └───instances_train2017.json
 ```
-You can easily use your dataset as a CustomClass that perfectly mimics COCO (only the classes and the palette are different).
+You can easily use your CustomDataset that perfectly mimics COCO (only the classes and the palette are different) in other projects.
 
 ## :clipboard: Notes
-Please read the description of `mask_channel` CLI argument and make sure you understand the mask options and the color palette.
+*IMPORTANT:* Please read the description of `mask_channel` CLI argument and make sure you understand the mask options and the color palette.
 
 ## TODOs
-- [ ] Support base formats other than masks
 - [ ] Add more datasets
