@@ -106,9 +106,9 @@ class BaseExporter:
         # Set color palette (get original from mmdet, if available)
         if self.palette is None:
             try:
-                import mmdet
+                from mmdet import datasets
 
-                self.palette = mmdet.datasets.coco.CocoDataset.PALETTE
+                self.palette = datasets.coco.CocoDataset.PALETTE
                 nr_coco_classes = len(self.palette)
                 nr_curr_classes = len(class_ids)
                 if nr_curr_classes > nr_coco_classes:
