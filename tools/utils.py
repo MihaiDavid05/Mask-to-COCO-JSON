@@ -18,7 +18,7 @@ def create_image_info(
         date_captured: str = datetime.datetime.utcnow().isoformat(" "),
         license_id: int = 1,
         coco_url: str = "",
-        flickr_url: str = "",
+        flickr_url: str = ""
 ) -> Dict[str, Union[int, str]]:
     """
     Build a dictionary with information for one image
@@ -43,7 +43,8 @@ def create_annotation_infos(
         image_id: int,
         category_info: Dict[str, int],
         binary_mask: NDArray[np.uint8],
-        filter_area: int = 4
+        filter_area: int = 4,
+        polygon_only: bool = False
 ) -> Tuple[Any, int]:
     """
      Builds list of dictionaries for 'annotations' field in COCO format
@@ -71,10 +72,11 @@ def create_annotation_infos(
     )
 
     # Hierarchy for a contour(c) is represented by: [Next_c_idx, Previous_c_idx, First_Child_c_idx, Parent_c_idx]
-    if hierarchy is not None:
-        # Search for parent contours where are more than 1 contour and set polygon annotation as false
-        if len(hierarchy[0]) > 1 and any([c[3] != -1 for c in hierarchy[0]]):
-            as_polygon = False
+    if not polygon_only:
+        if hierarchy is not None:
+            # Search for parent contours where are more than 1 contour and set polygon annotation as false
+            if len(hierarchy[0]) > 1 and any([c[3] != -1 for c in hierarchy[0]]):
+                as_polygon = False
 
     for i, contour in enumerate(contours):
 
