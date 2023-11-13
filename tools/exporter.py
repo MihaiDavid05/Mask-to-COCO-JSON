@@ -61,11 +61,12 @@ class BaseExporter:
         """
         pass
 
-    def export(self, filter_area: int = 4) -> Dict[str, Union[List, Dict[str, Any]]]:
+    def export(self, filter_area: int = 4, polygon_only: bool = False) -> Dict[str, Union[List, Dict[str, Any]]]:
         """
         Exports annotations to COCO JSON format
         Args:
             filter_area: area under which objects are discarded (considered to be too small)
+            polygon_only: whether to export to polygon format only
 
         Returns: Dictionary formatted in COCO style
 
@@ -75,7 +76,7 @@ class BaseExporter:
         self.coco_output["categories"] = self.categories
 
         # Fill images and annotations
-        images, annotations = self._build_images_annotations(filter_area)
+        images, annotations = self._build_images_annotations(filter_area, polygon_only)
         self.coco_output["images"] = images
         self.coco_output["annotations"] = annotations
 
@@ -152,11 +153,12 @@ class BaseExporter:
 
         return categories
 
-    def _build_images_annotations(self, filter_area: int = 4) -> Tuple[List[Dict[str, Any]], List[Dict[str, Any]]]:
+    def _build_images_annotations(self, filter_area: int = 4, polygon_only: bool = False) -> Tuple[List[Dict[str, Any]], List[Dict[str, Any]]]:
         """
         Build 'images' and 'annotations' dictionary entries in the COCO JSON format
         Args:
             filter_area: area under which objects are discarded (considered to be too small)
+            polygon_only: whether to export to polygon format only
 
         Returns: 2 lists of dictionaries, mainly: images, annotations
 
@@ -220,7 +222,8 @@ class BaseExporter:
                     image_id,
                     category_info,
                     binary_mask,
-                    filter_area=filter_area
+                    filter_area=filter_area,
+                    polygon_only=polygon_only
                 )
                 # Update annotations and instance is
                 annotations.extend(annotation_info)
